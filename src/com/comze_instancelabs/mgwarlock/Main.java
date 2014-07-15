@@ -1,0 +1,167 @@
+package com.comze_instancelabs.mgwarlock;
+
+import java.util.ArrayList;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Egg;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerEggThrowEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import com.comze_instancelabs.minigamesapi.Arena;
+import com.comze_instancelabs.minigamesapi.ArenaSetup;
+import com.comze_instancelabs.minigamesapi.ArenaState;
+import com.comze_instancelabs.minigamesapi.MinigamesAPI;
+import com.comze_instancelabs.minigamesapi.PluginInstance;
+import com.comze_instancelabs.minigamesapi.commands.CommandHandler;
+import com.comze_instancelabs.minigamesapi.config.ArenasConfig;
+import com.comze_instancelabs.minigamesapi.config.DefaultConfig;
+import com.comze_instancelabs.minigamesapi.config.MessagesConfig;
+import com.comze_instancelabs.minigamesapi.config.StatsConfig;
+import com.comze_instancelabs.minigamesapi.util.Util;
+import com.comze_instancelabs.minigamesapi.util.Validator;
+
+public class Main extends JavaPlugin implements Listener {
+
+	// give players items like grenades (drop fireballs)
+
+	MinigamesAPI api = null;
+	static Main m = null;
+
+	public void onEnable() {
+		m = this;
+		api = MinigamesAPI.getAPI().setupAPI(this, IArena.class, new ArenasConfig(this), new MessagesConfig(this), new IClassesConfig(this), new StatsConfig(this, false), new DefaultConfig(this, false), false);
+		PluginInstance pinstance = api.pinstances.get(this);
+		pinstance.addLoadedArenas(loadArenas(this, pinstance.getArenasConfig()));
+		Bukkit.getPluginManager().registerEvents(this, this);
+		pinstance.arenaSetup = new IArenaSetup();
+	}
+
+	public static ArrayList<Arena> loadArenas(JavaPlugin plugin, ArenasConfig cf) {
+		ArrayList<Arena> ret = new ArrayList<Arena>();
+		FileConfiguration config = cf.getConfig();
+		if (!config.isSet("arenas")) {
+			return ret;
+		}
+		for (String arena : config.getConfigurationSection("arenas.").getKeys(false)) {
+			if (Validator.isArenaValid(plugin, arena, cf.getConfig())) {
+				ret.add(initArena(arena));
+			}
+		}
+		return ret;
+	}
+
+	public static IArena initArena(String arena) {
+		IArena a = new IArena(m, arena);
+		ArenaSetup s = MinigamesAPI.getAPI().pinstances.get(m).arenaSetup;
+		a.init(Util.getSignLocationFromArena(m, arena), Util.getAllSpawns(m, arena), Util.getMainLobby(m), Util.getComponentForArena(m, arena, "lobby"), s.getPlayerCount(m, arena, true), s.getPlayerCount(m, arena, false), s.getArenaVIP(m, arena));
+		return a;
+	}
+
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		CommandHandler ch = new CommandHandler();
+		return ch.handleArgs(this, "mgwarlock", "/" + cmd.getName(), sender, args);
+	}
+
+	@EventHandler
+	public void onPlayerPickup(PlayerPickupItemEvent event) {
+		if (api.global_players.containsKey(event.getPlayer().getName())) {
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onPlayerDrop(PlayerDropItemEvent event) {
+		if (api.global_players.containsKey(event.getPlayer().getName())) {
+			event.setCancelled(true);
+		}
+	}
+
+	private ArrayList<String> pusage = new ArrayList<String>();
+
+	@EventHandler
+	public void onInteract(PlayerInteractEvent event) {
+		final Player p = event.getPlayer();
+		if (api.global_players.containsKey(p.getName())) {
+			if (event.hasItem()) {
+				if (event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+					final ItemStack item = event.getItem();
+					if (item.getType() == Material.STONE_HOE) {
+						// event.getPlayer().throwEgg();
+						if (item.getDurability() < 124) { // 132
+							p.launchProjectile(Egg.class);
+							item.setDurability((short) (item.getDurability() + 6));
+						} else {
+							if (!pusage.contains(p.getName())) {
+								p.sendMessage(ChatColor.RED + "Please wait 3 seconds before using this gun again!");
+								Bukkit.getScheduler().runTaskLater(m, new Runnable() {
+									public void run() {
+										p.updateInventory();
+										// TODO FIX THIS
+										// p.getInventory().removeItem(new ItemStack(Material.STONE_HOE));
+										p.getInventory().clear();
+										p.updateInventory();
+										p.getInventory().addItem(new ItemStack(Material.STONE_HOE));
+										p.updateInventory();
+										if (pusage.contains(p.getName())) {
+											pusage.remove(p.getName());
+										}
+									}
+								}, 20L * 3);
+								pusage.add(p.getName());
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	@EventHandler
+	public void onEgg(PlayerEggThrowEvent event) {
+		if (api.global_players.containsKey(event.getPlayer().getName())) {
+			event.setHatching(false);
+		}
+	}
+
+	@EventHandler
+	public void onEntityDamage(EntityDamageEvent event) {
+		if (event.getEntity() instanceof Player) {
+			Player p = (Player) event.getEntity();
+			if (api.global_players.containsKey(p.getName())) {
+				IArena a = (IArena) api.global_players.get(p.getName());
+				if (a.getArenaState() == ArenaState.INGAME) {
+					System.out.println(event.getCause().toString());
+					if (event.getCause() == DamageCause.ENTITY_ATTACK) {
+						p.setHealth(20D);
+						event.setCancelled(true);
+						return;
+					}
+				}
+			}
+		}
+	}
+
+	@EventHandler
+	public void onBreak(BlockBreakEvent event) {
+		if (api.global_players.containsKey(event.getPlayer().getName())) {
+			event.setCancelled(true);
+		}
+	}
+
+}

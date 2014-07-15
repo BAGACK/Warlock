@@ -1,0 +1,11 @@
+name: MGWarlock
+main: com.comze_instancelabs.mgwarlock.Main
+version: 1.0.0
+author: InstanceLabs
+softdepend: [Vault, MinigamesAPI]
+loadbefore: [MinigamesAPI]
+commands:
+   wl:
+      description: Main command
+      usage: /wl [action]
+      aliases: [warlock, mgwarlock]
