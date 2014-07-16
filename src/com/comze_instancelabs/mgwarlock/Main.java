@@ -1,6 +1,7 @@
 package com.comze_instancelabs.mgwarlock;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -26,6 +27,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.comze_instancelabs.minigamesapi.Arena;
 import com.comze_instancelabs.minigamesapi.ArenaSetup;
 import com.comze_instancelabs.minigamesapi.ArenaState;
+import com.comze_instancelabs.minigamesapi.Classes;
 import com.comze_instancelabs.minigamesapi.MinigamesAPI;
 import com.comze_instancelabs.minigamesapi.PluginInstance;
 import com.comze_instancelabs.minigamesapi.commands.CommandHandler;
@@ -39,13 +41,14 @@ import com.comze_instancelabs.minigamesapi.util.Validator;
 public class Main extends JavaPlugin implements Listener {
 
 	// give players items like grenades (drop fireballs)
+	// allow custom arenas
 
 	MinigamesAPI api = null;
 	static Main m = null;
 
 	public void onEnable() {
 		m = this;
-		api = MinigamesAPI.getAPI().setupAPI(this, IArena.class, new ArenasConfig(this), new MessagesConfig(this), new IClassesConfig(this), new StatsConfig(this, false), new DefaultConfig(this, false), false);
+		api = MinigamesAPI.getAPI().setupAPI(this, "warlock", IArena.class, new ArenasConfig(this), new MessagesConfig(this), new IClassesConfig(this), new StatsConfig(this, false), new DefaultConfig(this, false), false);
 		PluginInstance pinstance = api.pinstances.get(this);
 		pinstance.addLoadedArenas(loadArenas(this, pinstance.getArenasConfig()));
 		Bukkit.getPluginManager().registerEvents(this, this);
@@ -92,7 +95,7 @@ public class Main extends JavaPlugin implements Listener {
 		}
 	}
 
-	private ArrayList<String> pusage = new ArrayList<String>();
+	private HashMap<String, Integer> pusage = new HashMap<String, Integer>();
 
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event) {
@@ -102,32 +105,38 @@ public class Main extends JavaPlugin implements Listener {
 				if (event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
 					final ItemStack item = event.getItem();
 					if (item.getType() == Material.STONE_HOE) {
-						// event.getPlayer().throwEgg();
-						if (item.getDurability() < 124) { // 132
-							p.launchProjectile(Egg.class);
-							item.setDurability((short) (item.getDurability() + 6));
-						} else {
-							if (!pusage.contains(p.getName())) {
-								p.sendMessage(ChatColor.RED + "Please wait 3 seconds before using this gun again!");
-								Bukkit.getScheduler().runTaskLater(m, new Runnable() {
-									public void run() {
-										p.updateInventory();
-										// TODO FIX THIS
-										// p.getInventory().removeItem(new ItemStack(Material.STONE_HOE));
-										p.getInventory().clear();
-										p.updateInventory();
-										p.getInventory().addItem(new ItemStack(Material.STONE_HOE));
-										p.updateInventory();
-										if (pusage.contains(p.getName())) {
-											pusage.remove(p.getName());
-										}
-									}
-								}, 20L * 3);
-								pusage.add(p.getName());
-							}
-						}
+						shoot(item, event.getPlayer(), 0, 124, 6, 1);
+					}else if (item.getType() == Material.IRON_HOE) {
+						shoot(item, event.getPlayer(), 1, 242, 8, 2);
+					}else if (item.getType() == Material.DIAMOND_HOE) {
+						shoot(item, event.getPlayer(), 2, 1554, 12, 2);
 					}
 				}
+			}
+		}
+	}
+	
+	public void shoot(ItemStack item, final Player p, int id, int durability, int durability_temp, int eggcount){
+		if (item.getDurability() < durability) { // 124
+			for(int i = 0; i < eggcount; i++){
+				p.launchProjectile(Egg.class);
+			}
+			item.setDurability((short) (item.getDurability() + durability_temp)); // 6
+		} else {
+			if (!pusage.containsKey(p.getName())) {
+				p.sendMessage(ChatColor.RED + "Please wait 3 seconds before using this gun again!");
+				Bukkit.getScheduler().runTaskLater(m, new Runnable() {
+					public void run() {
+						p.updateInventory();
+						p.getInventory().clear();
+						p.updateInventory();
+						Classes.getClass(m, p.getName());
+						if (pusage.containsKey(p.getName())) {
+							pusage.remove(p.getName());
+						}
+					}
+				}, 20L * 3);
+				pusage.put(p.getName(), id);
 			}
 		}
 	}
