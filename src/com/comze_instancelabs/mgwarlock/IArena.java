@@ -18,10 +18,17 @@ public class IArena extends Arena {
 
 	private BukkitTask timer;
 	Main m = null;
+	public int c = 30;
+	BukkitTask tt;
+	int currentingamecount;
 
 	public IArena(Main m, String arena) {
 		super(m, arena);
 		this.m = m;
+	}
+
+	public void setRadius(int i) {
+		this.c = i;
 	}
 
 	public void generateArena(Location start) {
@@ -29,9 +36,11 @@ public class IArena extends Arena {
 		int y = start.getBlockY();
 		int z = start.getBlockZ();
 
-		for (int x_ = -30; x_ <= 30; x_++) {
-			for (int z_ = -30; z_ <= 30; z_++) {
-				if ((x_ * x_) + (z_ * z_) <= 900) {
+		int c_2 = c * c;
+
+		for (int x_ = -c; x_ <= c; x_++) {
+			for (int z_ = -c; z_ <= c; z_++) {
+				if ((x_ * x_) + (z_ * z_) <= c_2) {
 					Block b = start.getWorld().getBlockAt(new Location(start.getWorld(), x - x_, y, z - z_));
 					b.setType(Material.ICE);
 				}
@@ -40,10 +49,6 @@ public class IArena extends Arena {
 
 		// TODO generate lava floor
 	}
-
-	public int c = 30;
-	BukkitTask tt;
-	int currentingamecount;
 
 	@Override
 	public void start() {
@@ -58,7 +63,7 @@ public class IArena extends Arena {
 		}
 		Util.teleportAllPlayers(this.getArena().getAllPlayers(), this.getArena().getSpawns());
 		final Arena a = this;
-		MinigamesAPI.getAPI().pinstances.get(m).scoreboardManager.updateScoreboard(a);
+		MinigamesAPI.getAPI().pinstances.get(m).scoreboardManager.updateScoreboard(m, a);
 		this.setTaskId(Bukkit.getScheduler().runTaskTimer(MinigamesAPI.getAPI(), new Runnable() {
 			public void run() {
 				currentingamecount--;
@@ -125,11 +130,11 @@ public class IArena extends Arena {
 	public void stop() {
 		super.stop();
 		final IArena a = this;
-		if(timer != null){
+		if (timer != null) {
 			timer.cancel();
 		}
-		Bukkit.getScheduler().runTaskLater(m, new Runnable(){
-			public void run(){
+		Bukkit.getScheduler().runTaskLater(m, new Runnable() {
+			public void run() {
 				a.generateArena(a.getSpawns().get(0));
 			}
 		}, 10L);

@@ -44,8 +44,10 @@ public class Main extends JavaPlugin implements Listener {
 	// allow custom arenas
 
 	MinigamesAPI api = null;
+	PluginInstance pli = null;
 	static Main m = null;
-
+	static int global_arenas_size = 30;
+	
 	public void onEnable() {
 		m = this;
 		api = MinigamesAPI.getAPI().setupAPI(this, "warlock", IArena.class, new ArenasConfig(this), new MessagesConfig(this), new IClassesConfig(this), new StatsConfig(this, false), new DefaultConfig(this, false), false);
@@ -53,6 +55,12 @@ public class Main extends JavaPlugin implements Listener {
 		pinstance.addLoadedArenas(loadArenas(this, pinstance.getArenasConfig()));
 		Bukkit.getPluginManager().registerEvents(this, this);
 		pinstance.arenaSetup = new IArenaSetup();
+		pli = pinstance;
+		
+		getConfig().addDefault("config.global_arenas_size", 30);
+		getConfig().options().copyDefaults(true);
+		this.saveConfig();
+		global_arenas_size = getConfig().getInt("config.global_arenas_size");
 	}
 
 	public static ArrayList<Arena> loadArenas(JavaPlugin plugin, ArenasConfig cf) {
@@ -73,6 +81,7 @@ public class Main extends JavaPlugin implements Listener {
 		IArena a = new IArena(m, arena);
 		ArenaSetup s = MinigamesAPI.getAPI().pinstances.get(m).arenaSetup;
 		a.init(Util.getSignLocationFromArena(m, arena), Util.getAllSpawns(m, arena), Util.getMainLobby(m), Util.getComponentForArena(m, arena, "lobby"), s.getPlayerCount(m, arena, true), s.getPlayerCount(m, arena, false), s.getArenaVIP(m, arena));
+		a.setRadius(global_arenas_size);
 		return a;
 	}
 
@@ -83,14 +92,14 @@ public class Main extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void onPlayerPickup(PlayerPickupItemEvent event) {
-		if (api.global_players.containsKey(event.getPlayer().getName())) {
+		if (pli.global_players.containsKey(event.getPlayer().getName())) {
 			event.setCancelled(true);
 		}
 	}
 
 	@EventHandler
 	public void onPlayerDrop(PlayerDropItemEvent event) {
-		if (api.global_players.containsKey(event.getPlayer().getName())) {
+		if (pli.global_players.containsKey(event.getPlayer().getName())) {
 			event.setCancelled(true);
 		}
 	}
@@ -100,7 +109,7 @@ public class Main extends JavaPlugin implements Listener {
 	@EventHandler
 	public void onInteract(PlayerInteractEvent event) {
 		final Player p = event.getPlayer();
-		if (api.global_players.containsKey(p.getName())) {
+		if (pli.global_players.containsKey(p.getName())) {
 			if (event.hasItem()) {
 				if (event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
 					final ItemStack item = event.getItem();
@@ -143,7 +152,7 @@ public class Main extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void onEgg(PlayerEggThrowEvent event) {
-		if (api.global_players.containsKey(event.getPlayer().getName())) {
+		if (pli.global_players.containsKey(event.getPlayer().getName())) {
 			event.setHatching(false);
 		}
 	}
@@ -152,8 +161,8 @@ public class Main extends JavaPlugin implements Listener {
 	public void onEntityDamage(EntityDamageEvent event) {
 		if (event.getEntity() instanceof Player) {
 			Player p = (Player) event.getEntity();
-			if (api.global_players.containsKey(p.getName())) {
-				IArena a = (IArena) api.global_players.get(p.getName());
+			if (pli.global_players.containsKey(p.getName())) {
+				IArena a = (IArena) pli.global_players.get(p.getName());
 				if (a.getArenaState() == ArenaState.INGAME) {
 					System.out.println(event.getCause().toString());
 					if (event.getCause() == DamageCause.ENTITY_ATTACK) {
@@ -168,7 +177,7 @@ public class Main extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void onBreak(BlockBreakEvent event) {
-		if (api.global_players.containsKey(event.getPlayer().getName())) {
+		if (pli.global_players.containsKey(event.getPlayer().getName())) {
 			event.setCancelled(true);
 		}
 	}
