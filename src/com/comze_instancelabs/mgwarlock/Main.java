@@ -164,7 +164,6 @@ public class Main extends JavaPlugin implements Listener {
 			if (pli.global_players.containsKey(p.getName())) {
 				IArena a = (IArena) pli.global_players.get(p.getName());
 				if (a.getArenaState() == ArenaState.INGAME) {
-					System.out.println(event.getCause().toString());
 					if (event.getCause() == DamageCause.ENTITY_ATTACK) {
 						p.setHealth(20D);
 						event.setCancelled(true);
