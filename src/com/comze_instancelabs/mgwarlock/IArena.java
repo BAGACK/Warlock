@@ -4,15 +4,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.comze_instancelabs.minigamesapi.Arena;
-import com.comze_instancelabs.minigamesapi.ArenaState;
-import com.comze_instancelabs.minigamesapi.Classes;
-import com.comze_instancelabs.minigamesapi.MinigamesAPI;
-import com.comze_instancelabs.minigamesapi.util.Util;
-import com.comze_instancelabs.minigamesapi.util.Validator;
+import com.comze_instancelabs.minigamesapi.events.ArenaStartedEvent;
 
 public class IArena extends Arena {
 
@@ -51,62 +48,28 @@ public class IArena extends Arena {
 	}
 
 	@Override
-	public void start() {
-		try {
-			Bukkit.getScheduler().cancelTask(this.getTaskId());
-		} catch (Exception e) {
+	public void spectate(String playername){
+		super.spectate(playername);
+		if(this.getPlayerAlive() < 2){
+			stop();
 		}
-		currentingamecount = MinigamesAPI.getAPI().pinstances.get(m).getIngameCountdown();
-		for (String p_ : this.getArena().getAllPlayers()) {
-			Player p = Bukkit.getPlayer(p_);
-			p.setWalkSpeed(0.0F);
-		}
-		Util.teleportAllPlayers(this.getArena().getAllPlayers(), this.getArena().getSpawns());
-		final Arena a = this;
-		MinigamesAPI.getAPI().pinstances.get(m).scoreboardManager.updateScoreboard(m, a);
-		this.setTaskId(Bukkit.getScheduler().runTaskTimer(MinigamesAPI.getAPI(), new Runnable() {
+	}
+	
+	@Override
+	public void started(){
+		timer = Bukkit.getScheduler().runTaskTimer(m, new Runnable() {
 			public void run() {
-				currentingamecount--;
-				if (currentingamecount == 60 || currentingamecount == 30 || currentingamecount == 15 || currentingamecount == 10 || currentingamecount < 6) {
-					for (String p_ : a.getAllPlayers()) {
-						if (Validator.isPlayerOnline(p_)) {
-							Player p = Bukkit.getPlayer(p_);
-							p.sendMessage(MinigamesAPI.getAPI().pinstances.get(m).getMessagesConfig().starting_in.replaceAll("<count>", Integer.toString(currentingamecount)));
-						}
-					}
-				}
-				if (currentingamecount < 1) {
-					a.getArena().setArenaState(ArenaState.INGAME);
-					for (String p_ : a.getAllPlayers()) {
-						if (!Classes.hasClass(m, p_)) {
-							Classes.setClass(m, "default", p_);
-						}
-						Classes.getClass(m, p_);
-						Player p = Bukkit.getPlayer(p_);
-						p.setWalkSpeed(0.2F);
-					}
-
-					timer = Bukkit.getScheduler().runTaskTimer(m, new Runnable() {
+				c--;
+				if (c > 0) {
+					removeCircle(c, Material.PACKED_ICE);
+					Bukkit.getScheduler().runTaskLater(m, new Runnable() {
 						public void run() {
-							c--;
-							if (c > 0) {
-								removeCircle(c, Material.PACKED_ICE);
-								Bukkit.getScheduler().runTaskLater(m, new Runnable() {
-									public void run() {
-										removeCircle(c, Material.AIR);
-									}
-								}, 16L); // 2L
-							}
+							removeCircle(c, Material.AIR);
 						}
-					}, 0L, 20L); // 6L
-
-					try {
-						Bukkit.getScheduler().cancelTask(a.getTaskId());
-					} catch (Exception e) {
-					}
+					}, 16L); // 2L
 				}
 			}
-		}, 5L, 20).getTaskId());
+		}, 0L, 20L); // 6L
 	}
 
 	public void removeCircle(int cr, Material mat) {
@@ -128,6 +91,7 @@ public class IArena extends Arena {
 
 	@Override
 	public void stop() {
+		System.out.println("stopping");
 		super.stop();
 		final IArena a = this;
 		if (timer != null) {
