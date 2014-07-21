@@ -91,7 +91,6 @@ public class IArena extends Arena {
 
 	@Override
 	public void stop() {
-		System.out.println("stopping");
 		super.stop();
 		final IArena a = this;
 		if (timer != null) {
@@ -99,6 +98,7 @@ public class IArena extends Arena {
 		}
 		Bukkit.getScheduler().runTaskLater(m, new Runnable() {
 			public void run() {
+				c = Main.global_arenas_size;
 				a.generateArena(a.getSpawns().get(0));
 			}
 		}, 10L);
