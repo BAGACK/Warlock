@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -98,9 +99,19 @@ public class Main extends JavaPlugin implements Listener {
 	}
 
 	@EventHandler
-	public void onPlayerDrop(PlayerDropItemEvent event) {
+	public void onPlayerDrop(final PlayerDropItemEvent event) {
 		if (pli.global_players.containsKey(event.getPlayer().getName())) {
-			event.setCancelled(true);
+			if(event.getItemDrop().getItemStack().getType() == Material.FIREBALL){
+				final Location l = event.getItemDrop().getLocation();
+				Bukkit.getScheduler().runTaskLater(m, new Runnable(){
+					public void run(){
+						l.getWorld().createExplosion(event.getItemDrop().getLocation(), 2F);
+						event.getItemDrop().remove();
+					}
+				}, 60L);
+			}else{
+				event.setCancelled(true);
+			}
 		}
 	}
 
