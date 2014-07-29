@@ -1,15 +1,15 @@
 package com.comze_instancelabs.mgwarlock;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.comze_instancelabs.minigamesapi.Arena;
-import com.comze_instancelabs.minigamesapi.events.ArenaStartedEvent;
+import com.comze_instancelabs.minigamesapi.MinigamesAPI;
 
 public class IArena extends Arena {
 
@@ -48,28 +48,42 @@ public class IArena extends Arena {
 	}
 
 	@Override
-	public void spectate(String playername){
+	public void spectate(String playername) {
 		super.spectate(playername);
-		if(this.getPlayerAlive() < 2){
+		// give killer a reward:
+		if(m.lastdamager.containsKey(playername)){
+			Player killer = Bukkit.getPlayer(m.lastdamager.get(playername));
+			m.pli.getRewardsInstance().giveReward(playername);
+			killer.sendMessage(MinigamesAPI.getAPI().pinstances.get(m).getMessagesConfig().you_got_a_kill.replaceAll("<player>", playername));
+		}
+		if (this.getPlayerAlive() < 2) {
 			stop();
 		}
 	}
-	
+
 	@Override
-	public void started(){
-		timer = Bukkit.getScheduler().runTaskTimer(m, new Runnable() {
+	public void started() {
+		for (String p_ : this.getAllPlayers()) {
+			Player p = Bukkit.getPlayer(p_);
+			p.sendMessage(ChatColor.RED + "The platform starts decreasing in 10 seconds!");
+		}
+		Bukkit.getScheduler().runTaskLater(m, new Runnable() {
 			public void run() {
-				c--;
-				if (c > 0) {
-					removeCircle(c, Material.PACKED_ICE);
-					Bukkit.getScheduler().runTaskLater(m, new Runnable() {
-						public void run() {
-							removeCircle(c, Material.AIR);
+				timer = Bukkit.getScheduler().runTaskTimer(m, new Runnable() {
+					public void run() {
+						c--;
+						if (c > 0) {
+							removeCircle(c, Material.PACKED_ICE);
+							Bukkit.getScheduler().runTaskLater(m, new Runnable() {
+								public void run() {
+									removeCircle(c, Material.AIR);
+								}
+							}, 16L); // 2L
 						}
-					}, 16L); // 2L
-				}
+					}
+				}, 0L, 20L); // 6L
 			}
-		}, 0L, 20L); // 6L
+		}, 10L);
 	}
 
 	public void removeCircle(int cr, Material mat) {

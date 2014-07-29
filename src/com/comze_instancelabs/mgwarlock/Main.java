@@ -16,6 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -41,13 +42,14 @@ import com.comze_instancelabs.minigamesapi.util.Validator;
 
 public class Main extends JavaPlugin implements Listener {
 
-	// give players items like grenades (drop fireballs)
 	// allow custom arenas
 
 	MinigamesAPI api = null;
 	PluginInstance pli = null;
 	static Main m = null;
 	static int global_arenas_size = 30;
+	
+	HashMap<String, String> lastdamager = new HashMap<String, String>();
 	
 	public void onEnable() {
 		m = this;
@@ -189,6 +191,20 @@ public class Main extends JavaPlugin implements Listener {
 	public void onBreak(BlockBreakEvent event) {
 		if (pli.global_players.containsKey(event.getPlayer().getName())) {
 			event.setCancelled(true);
+		}
+	}
+	
+	@EventHandler
+	public void onEntityDamageByEntity(EntityDamageByEntityEvent event){
+		if (event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
+			Player p = (Player) event.getEntity();
+			Player attacker = (Player) event.getDamager();
+			if (pli.global_players.containsKey(p.getName()) && pli.global_players.containsKey(attacker.getName())) {
+				IArena a = (IArena) pli.global_players.get(p.getName());
+				if (a.getArenaState() == ArenaState.INGAME) {
+					lastdamager.put(p.getName(), attacker.getName());
+				}
+			}
 		}
 	}
 
