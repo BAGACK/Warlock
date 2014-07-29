@@ -83,7 +83,7 @@ public class IArena extends Arena {
 					}
 				}, 0L, 20L); // 6L
 			}
-		}, 10L);
+		}, 20L * 10);
 	}
 
 	public void removeCircle(int cr, Material mat) {
