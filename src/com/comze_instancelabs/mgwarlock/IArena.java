@@ -51,13 +51,10 @@ public class IArena extends Arena {
 	public void spectate(String playername) {
 		super.spectate(playername);
 		// give killer a reward:
-		if(m.lastdamager.containsKey(playername)){
+		if (m.lastdamager.containsKey(playername)) {
 			Player killer = Bukkit.getPlayer(m.lastdamager.get(playername));
-			m.pli.getRewardsInstance().giveReward(playername);
+			m.pli.getRewardsInstance().giveReward(killer.getName());
 			killer.sendMessage(MinigamesAPI.getAPI().pinstances.get(m).getMessagesConfig().you_got_a_kill.replaceAll("<player>", playername));
-		}
-		if (this.getPlayerAlive() < 2) {
-			stop();
 		}
 	}
 
@@ -88,7 +85,7 @@ public class IArena extends Arena {
 
 	public void removeCircle(int cr, Material mat) {
 		int cradius_s = cr * cr;
-		Location start = this.getSpawns().get(0);
+		Location start = this.getSpawns().get(0).clone().add(0D, -1D, 0D);
 		int x = start.getBlockX();
 		int y = start.getBlockY();
 		int z = start.getBlockZ();
@@ -113,7 +110,7 @@ public class IArena extends Arena {
 		Bukkit.getScheduler().runTaskLater(m, new Runnable() {
 			public void run() {
 				c = Main.global_arenas_size;
-				a.generateArena(a.getSpawns().get(0));
+				a.generateArena(a.getSpawns().get(0).clone().add(0D, -1D, 0D));
 			}
 		}, 10L);
 	}
