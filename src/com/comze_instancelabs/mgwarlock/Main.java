@@ -48,18 +48,18 @@ public class Main extends JavaPlugin implements Listener {
 	PluginInstance pli = null;
 	static Main m = null;
 	static int global_arenas_size = 30;
-	
+
 	HashMap<String, String> lastdamager = new HashMap<String, String>();
-	
+
 	public void onEnable() {
 		m = this;
 		api = MinigamesAPI.getAPI().setupAPI(this, "warlock", IArena.class, new ArenasConfig(this), new MessagesConfig(this), new IClassesConfig(this), new StatsConfig(this, false), new DefaultConfig(this, false), false);
 		PluginInstance pinstance = api.pinstances.get(this);
 		pinstance.addLoadedArenas(loadArenas(this, pinstance.getArenasConfig()));
 		Bukkit.getPluginManager().registerEvents(this, this);
-		pinstance.arenaSetup = new IArenaSetup();
+		pinstance.arenaSetup = new ArenaSetup();
 		pli = pinstance;
-		
+
 		getConfig().addDefault("config.global_arenas_size", 30);
 		getConfig().options().copyDefaults(true);
 		this.saveConfig();
@@ -103,15 +103,15 @@ public class Main extends JavaPlugin implements Listener {
 	@EventHandler
 	public void onPlayerDrop(final PlayerDropItemEvent event) {
 		if (pli.global_players.containsKey(event.getPlayer().getName())) {
-			if(event.getItemDrop().getItemStack().getType() == Material.FIREBALL){
+			if (event.getItemDrop().getItemStack().getType() == Material.FIREBALL) {
 				final Location l = event.getItemDrop().getLocation();
-				Bukkit.getScheduler().runTaskLater(m, new Runnable(){
-					public void run(){
-						l.getWorld().createExplosion(event.getItemDrop().getLocation(), 2F);
+				Bukkit.getScheduler().runTaskLater(m, new Runnable() {
+					public void run() {
+						l.getWorld().createExplosion(l.getX(), l.getY(), l.getZ(), 3F, false, false);
 						event.getItemDrop().remove();
 					}
 				}, 60L);
-			}else{
+			} else {
 				event.setCancelled(true);
 			}
 		}
@@ -128,19 +128,19 @@ public class Main extends JavaPlugin implements Listener {
 					final ItemStack item = event.getItem();
 					if (item.getType() == Material.STONE_HOE) {
 						shoot(item, event.getPlayer(), 0, 124, 6, 1);
-					}else if (item.getType() == Material.IRON_HOE) {
+					} else if (item.getType() == Material.IRON_HOE) {
 						shoot(item, event.getPlayer(), 1, 242, 8, 2);
-					}else if (item.getType() == Material.DIAMOND_HOE) {
+					} else if (item.getType() == Material.DIAMOND_HOE) {
 						shoot(item, event.getPlayer(), 2, 1554, 12, 2);
 					}
 				}
 			}
 		}
 	}
-	
-	public void shoot(ItemStack item, final Player p, int id, int durability, int durability_temp, int eggcount){
+
+	public void shoot(ItemStack item, final Player p, int id, int durability, int durability_temp, int eggcount) {
 		if (item.getDurability() < durability) { // 124
-			for(int i = 0; i < eggcount; i++){
+			for (int i = 0; i < eggcount; i++) {
 				p.launchProjectile(Egg.class);
 			}
 			item.setDurability((short) (item.getDurability() + durability_temp)); // 6
@@ -193,9 +193,9 @@ public class Main extends JavaPlugin implements Listener {
 			event.setCancelled(true);
 		}
 	}
-	
+
 	@EventHandler
-	public void onEntityDamageByEntity(EntityDamageByEntityEvent event){
+	public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
 		if (event.getEntity() instanceof Player && event.getDamager() instanceof Player) {
 			Player p = (Player) event.getEntity();
 			Player attacker = (Player) event.getDamager();
