@@ -104,10 +104,10 @@ public class Main extends JavaPlugin implements Listener {
 	public void onPlayerDrop(final PlayerDropItemEvent event) {
 		if (pli.global_players.containsKey(event.getPlayer().getName())) {
 			if (event.getItemDrop().getItemStack().getType() == Material.FIREBALL) {
-				final Location l = event.getItemDrop().getLocation();
 				Bukkit.getScheduler().runTaskLater(m, new Runnable() {
 					public void run() {
-						l.getWorld().createExplosion(l.getX(), l.getY(), l.getZ(), 3F, false, false);
+						Location l = event.getItemDrop().getLocation();
+						l.getWorld().createExplosion(l.getX(), l.getY(), l.getZ(), 3.5F, false, false);
 						event.getItemDrop().remove();
 					}
 				}, 60L);
@@ -152,7 +152,7 @@ public class Main extends JavaPlugin implements Listener {
 						p.updateInventory();
 						p.getInventory().clear();
 						p.updateInventory();
-						Classes.getClass(m, p.getName());
+						pli.getClassesHandler().getClass(p.getName());
 						if (pusage.containsKey(p.getName())) {
 							pusage.remove(p.getName());
 						}
