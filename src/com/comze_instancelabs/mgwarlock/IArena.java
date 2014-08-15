@@ -14,6 +14,7 @@ import com.comze_instancelabs.minigamesapi.MinigamesAPI;
 public class IArena extends Arena {
 
 	private BukkitTask timer;
+	private BukkitTask starttimer;
 	Main m = null;
 	public int c = 30;
 	BukkitTask tt;
@@ -64,7 +65,7 @@ public class IArena extends Arena {
 			Player p = Bukkit.getPlayer(p_);
 			p.sendMessage(ChatColor.RED + "The platform starts decreasing in 10 seconds!");
 		}
-		Bukkit.getScheduler().runTaskLater(m, new Runnable() {
+		starttimer = Bukkit.getScheduler().runTaskLater(m, new Runnable() {
 			public void run() {
 				timer = Bukkit.getScheduler().runTaskTimer(m, new Runnable() {
 					public void run() {
@@ -106,6 +107,9 @@ public class IArena extends Arena {
 		final IArena a = this;
 		if (timer != null) {
 			timer.cancel();
+		}
+		if (starttimer != null) {
+			starttimer.cancel();
 		}
 		Bukkit.getScheduler().runTaskLater(m, new Runnable() {
 			public void run() {
