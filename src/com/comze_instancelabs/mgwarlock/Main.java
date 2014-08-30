@@ -55,12 +55,13 @@ public class Main extends JavaPlugin implements Listener {
 		m = this;
 		api = MinigamesAPI.getAPI().setupAPI(this, "warlock", IArena.class, new ArenasConfig(this), new MessagesConfig(this), new IClassesConfig(this), new StatsConfig(this, false), new DefaultConfig(this, false), false);
 		PluginInstance pinstance = api.pinstances.get(this);
+		pli = pinstance;
 		pinstance.addLoadedArenas(loadArenas(this, pinstance.getArenasConfig()));
 		Bukkit.getPluginManager().registerEvents(this, this);
 		pinstance.arenaSetup = new ArenaSetup();
-		pli = pinstance;
 
 		getConfig().addDefault("config.global_arenas_size", 30);
+		getConfig().addDefault("config.bombs_blocks_damage", true);
 		getConfig().options().copyDefaults(true);
 		this.saveConfig();
 		global_arenas_size = getConfig().getInt("config.global_arenas_size");
@@ -107,7 +108,7 @@ public class Main extends JavaPlugin implements Listener {
 				Bukkit.getScheduler().runTaskLater(m, new Runnable() {
 					public void run() {
 						Location l = event.getItemDrop().getLocation();
-						l.getWorld().createExplosion(l.getX(), l.getY(), l.getZ(), 3.5F, false, false);
+						l.getWorld().createExplosion(l.getX(), l.getY(), l.getZ(), 3.5F, false, getConfig().getBoolean("config.bombs_blocks_damage"));
 						event.getItemDrop().remove();
 					}
 				}, 60L);
