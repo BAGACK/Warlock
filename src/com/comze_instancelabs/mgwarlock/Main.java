@@ -11,6 +11,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Egg;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -133,6 +134,18 @@ public class Main extends JavaPlugin implements Listener {
 						shoot(item, event.getPlayer(), 1, 242, 8, 2);
 					} else if (item.getType() == Material.DIAMOND_HOE) {
 						shoot(item, event.getPlayer(), 2, 1554, 12, 2);
+					} else if (item.getType() == Material.FIREBALL) {
+						final Item item_ = p.getWorld().dropItem(p.getLocation().clone().add(0D, 1D, 0D), new ItemStack(Material.FIREBALL));
+						item_.setVelocity(p.getLocation().getDirection().multiply(0.5D));
+						Bukkit.getScheduler().runTaskLater(m, new Runnable() {
+							public void run() {
+								Location l = item_.getLocation();
+								l.getWorld().createExplosion(l.getX(), l.getY(), l.getZ(), 3.5F, false, getConfig().getBoolean("config.bombs_blocks_damage"));
+								item_.remove();
+							}
+						}, 60L);
+						p.getInventory().remove(new ItemStack(Material.FIREBALL, 2));
+						p.updateInventory();
 					}
 				}
 			}
