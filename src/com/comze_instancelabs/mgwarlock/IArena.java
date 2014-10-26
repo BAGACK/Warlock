@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.comze_instancelabs.minigamesapi.Arena;
+import com.comze_instancelabs.minigamesapi.ArenaType;
 import com.comze_instancelabs.minigamesapi.MinigamesAPI;
 
 public class IArena extends Arena {
@@ -25,7 +26,7 @@ public class IArena extends Arena {
 	private int block_id = 174;
 
 	public IArena(Main m, String arena) {
-		super(m, arena);
+		super(m, arena, ArenaType.REGENERATION);
 		this.m = m;
 	}
 
