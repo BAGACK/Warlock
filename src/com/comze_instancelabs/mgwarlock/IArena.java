@@ -26,7 +26,7 @@ public class IArena extends Arena {
 	private int block_id = 174;
 
 	public IArena(Main m, String arena) {
-		super(m, arena, ArenaType.REGENERATION);
+		super(m, arena);
 		this.m = m;
 	}
 
