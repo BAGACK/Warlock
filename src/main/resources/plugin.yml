@@ -1,6 +1,6 @@
 name: MGWarlock
 main: com.comze_instancelabs.mgwarlock.Main
-version: 1.2.0
+version: ${version}
 author: [InstanceLabs,mepeisen]
 softdepend: [Vault, MinigamesLib]
 depend: [MinigamesLib]
