@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.comze_instancelabs.minigamesapi.Arena;
-import com.comze_instancelabs.minigamesapi.ArenaType;
+import com.comze_instancelabs.minigamesapi.ArenaConfigStrings;
 import com.comze_instancelabs.minigamesapi.MinigamesAPI;
 
 public class IArena extends Arena {
@@ -38,11 +38,11 @@ public class IArena extends Arena {
 
 	public void initBlockID(){
 		try {
-			if (!this.m.pli.getArenasConfig().getConfig().isSet("arenas." + this.getName() + ".outer_circle_block_id")) {
-				this.m.pli.getArenasConfig().getConfig().set("arenas." + this.getName() + ".outer_circle_block_id", 174);
+			if (!this.m.pli.getArenasConfig().getConfig().isSet(ArenaConfigStrings.ARENAS_PREFIX + this.getName() + ".outer_circle_block_id")) {
+				this.m.pli.getArenasConfig().getConfig().set(ArenaConfigStrings.ARENAS_PREFIX + this.getName() + ".outer_circle_block_id", 174);
 				this.m.pli.getArenasConfig().saveConfig();
 			} else {
-				block_id = this.m.pli.getArenasConfig().getConfig().getInt("arenas." + this.getName() + ".outer_circle_block_id");
+				block_id = this.m.pli.getArenasConfig().getConfig().getInt(ArenaConfigStrings.ARENAS_PREFIX + this.getName() + ".outer_circle_block_id");
 			}
 		} catch (Exception e) {
 			System.out.println("Failed initializing outer_circle_block_id config entry.");
