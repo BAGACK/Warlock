@@ -1,6 +1,7 @@
 package com.comze_instancelabs.mgwarlock;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -45,7 +46,7 @@ public class IArena extends Arena {
 				block_id = this.m.pli.getArenasConfig().getConfig().getInt(ArenaConfigStrings.ARENAS_PREFIX + this.getName() + ".outer_circle_block_id");
 			}
 		} catch (Exception e) {
-			System.out.println("Failed initializing outer_circle_block_id config entry.");
+			getPlugin().getLogger().log(Level.WARNING, "Failed initializing outer_circle_block_id config entry.", e);
 		}
 	}
 	
