@@ -1,4 +1,4 @@
-Warlock [![Build Status](http://www.minigameslib.de/build.php?app=Warlock&major=1)](http://www.minigameslib.de/buildref.php?app=Warlock&major=1)
+Warlock [![Build Status](http://www.minigameslib.de/build.png?app=Warlock&major=1)](http://www.minigameslib.de/buildref.php?app=Warlock&major=1)
 =======
 
 Win by pushing all others from a disintegrating platform with guns and grenades
