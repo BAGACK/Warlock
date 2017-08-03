@@ -38,6 +38,7 @@ import com.comze_instancelabs.minigamesapi.config.ArenasConfig;
 import com.comze_instancelabs.minigamesapi.config.DefaultConfig;
 import com.comze_instancelabs.minigamesapi.config.MessagesConfig;
 import com.comze_instancelabs.minigamesapi.config.StatsConfig;
+import com.comze_instancelabs.minigamesapi.util.PlayerPickupItemHelper;
 import com.comze_instancelabs.minigamesapi.util.Util;
 import com.comze_instancelabs.minigamesapi.util.Validator;
 
@@ -66,6 +67,8 @@ public class Main extends JavaPlugin implements Listener {
 		getConfig().options().copyDefaults(true);
 		this.saveConfig();
 		global_arenas_size = getConfig().getInt("config.global_arenas_size");
+		
+		new PlayerPickupItemHelper(this, this::onPlayerPickup);
 	}
 
 	public static ArrayList<Arena> loadArenas(JavaPlugin plugin, ArenasConfig cf) {
@@ -95,8 +98,7 @@ public class Main extends JavaPlugin implements Listener {
 		return ch.handleArgs(this, MinigamesAPI.getAPI().getPermissionGamePrefix("warlock"), "/" + cmd.getName(), sender, args);
 	}
 
-	@EventHandler
-	public void onPlayerPickup(PlayerPickupItemEvent event) {
+	public void onPlayerPickup(PlayerPickupItemHelper.CustomPickupEvent event) {
 		if (pli.global_players.containsKey(event.getPlayer().getName())) {
 			event.setCancelled(true);
 		}
